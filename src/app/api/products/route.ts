@@ -9,13 +9,28 @@ export async function GET() {
       .where('is_active', '==', true)
       .get();
 
-    const products = snap.docs.map((doc) => ({
-      id: Number(doc.data().storefront_id || doc.id),
-      ...doc.data(),
-      image: doc.data().image_url || doc.data().image || '',
-      price: doc.data().price ?? null,
-      mrp: doc.data().compare_at_price ?? null,
-    }));
+    const products = snap.docs.map((doc) => {
+      const data = doc.data();
+      const id = Number(data.storefront_id ?? data.id ?? doc.id);
+      const fallbackImage =
+        id >= 1 && id <= 7
+          ? `/images/combos/combo-${id}/image-1.webp`
+          : id === 8
+            ? '/images/combo-gallery/combo-8/01.jpg'
+            : '';
+      const suppliedImage = String(data.image_url || data.image || '').trim();
+
+      return {
+        ...data,
+        id,
+        // Keep valid hosted image URLs; replace old local .jpg paths with the shipped WebP assets.
+        image: /^https?:\/\//i.test(suppliedImage)
+          ? suppliedImage
+          : fallbackImage || suppliedImage,
+        price: data.price ?? null,
+        mrp: data.compare_at_price ?? null,
+      };
+    });
 
     return NextResponse.json(
       { products, configured: true },

@@ -19,6 +19,13 @@ import {
   Check,
   Instagram,
   Youtube,
+  MapPin,
+  Mail,
+  Phone,
+  MessageCircle,
+  Star,
+  Send,
+  ExternalLink,
 } from 'lucide-react';
 
 const instagramUrl = 'https://www.instagram.com/fashionyapa/';
@@ -43,7 +50,7 @@ const initialProducts: Product[] = [
     mrp: null,
     price: 1300,
     tag: 'BEAUTY FAVOURITE',
-    image: '/images/combos/combo-1.png',
+    image: '/images/combos/combo-1/image-5.webp',
   },
   {
     id: 2,
@@ -52,7 +59,7 @@ const initialProducts: Product[] = [
     mrp: null,
     price: 1162,
     tag: 'EVERYDAY GLOW',
-    image: '/images/combos/combo-2.png',
+    image: '/images/combos/combo-2/image-5.webp',
   },
   {
     id: 3,
@@ -61,7 +68,7 @@ const initialProducts: Product[] = [
     mrp: null,
     price: 2063,
     tag: 'MAKEUP ESSENTIALS',
-    image: '/images/combos/combo-3.png',
+    image: '/images/combos/combo-3/image-3.webp',
   },
   {
     id: 4,
@@ -70,7 +77,7 @@ const initialProducts: Product[] = [
     mrp: null,
     price: 2300,
     tag: 'TRENDING COMBO',
-    image: '/images/combos/combo-4.png',
+    image: '/images/combos/combo-4/image-5.webp',
   },
   {
     id: 5,
@@ -79,26 +86,27 @@ const initialProducts: Product[] = [
     mrp: null,
     price: 3380,
     tag: 'COMPLETE COLLECTION',
-    image: '/images/combos/combo-5.png',
+    image: '/images/combos/combo-5/image-5.webp',
   },
   {
     id: 6,
     name: 'Complete Body Care Combo',
     subtitle: 'Everyday cleansing and body-care essentials',
     mrp: null,
-    price: 1620,
+    price: 2300,
     tag: 'SELF-CARE FAVOURITE',
-    image: '/images/combos/combo-6.png',
+    image: '/images/combos/combo-6/image-6.webp',
   },
   {
     id: 7,
     name: 'Lazy Girl Makeup Combo',
     subtitle: 'Five essentials for a quick everyday look',
     mrp: null,
-    price: null,
+    price: 1575,
     tag: 'EASY EVERYDAY LOOK',
-    image: '/images/combos/combo-7.png',
+    image: '/images/combos/combo-7/image-6.webp',
   },
+  { id: 8, name: 'Lip Care Combo', subtitle: 'A curated collection of lip-care and lip-colour essentials', mrp: null, price: null, tag: 'LIP CARE FAVOURITE', image: '/images/combos/combo-8/image-3.webp' },
 ];
 
 export default function Home() {
@@ -111,6 +119,8 @@ export default function Home() {
   const [cartOpen, setCartOpen] = useState(false);
   const [toast, setToast] = useState('');
   const [cartLoaded, setCartLoaded] = useState(false);
+  const [feedbackName, setFeedbackName] = useState('');
+  const [feedbackMessage, setFeedbackMessage] = useState('');
 
   useEffect(() => {
     try { setCart(JSON.parse(localStorage.getItem(CART_STORAGE_KEY) || '[]')); } catch { setCart([]); }
@@ -121,8 +131,8 @@ export default function Home() {
     let active = true;
     fetch('/api/products', { cache: 'no-store' }).then(r => r.json()).then(data => {
       if (!active || !Array.isArray(data.products) || !data.products.length) return;
-      const mapped: Product[] = data.products.map((p: Record<string, unknown>) => ({ id: Number(p.storefront_id ?? p.id), name: String(p.name || ''), subtitle: String(p.subtitle || p.description || ''), mrp: p.compare_at_price == null ? null : Number(p.compare_at_price), price: p.price == null ? null : Number(p.price), tag: String(p.tag || 'VIRAL COMBO'), image: String(p.image_url || p.image || '') }));
-      setProducts(mapped);
+      const mapped: Product[] = data.products.map((p: Record<string, unknown>) => ({ id: Number(p.storefront_id ?? p.id), name: String(p.name || ''), subtitle: String(p.subtitle || p.description || ''), mrp: p.compare_at_price == null ? null : Number(p.compare_at_price), price: p.price == null ? null : Number(p.price), tag: String(p.tag || 'VIRAL COMBO'), image: String(p.image_url || p.image || initialProducts.find((fallback) => fallback.id === Number(p.storefront_id ?? p.id))?.image || '') }));
+      setProducts(mapped.some((item) => item.id === 8) ? mapped : [...mapped, initialProducts.find((item) => item.id === 8)!]);
     }).catch(() => {});
     return () => { active = false; };
   }, []);
@@ -204,7 +214,7 @@ export default function Home() {
           </button>
 
           <a className="brand" href="#home" aria-label="Fashionyapa home">
-            <img src="/images/fashionyapa-logo.png" alt="Fashionyapa logo" />
+            <img src="/images/fashionyapa-logo.webp" alt="Fashionyapa logo" />
             <span>FASHIONYAPA</span>
           </a>
 
@@ -307,16 +317,12 @@ export default function Home() {
 
         <div className="hero-photo">
           <img
-            src="/images/combos/combo-1.png"
-            alt="Fashionyapa beauty makeup combo"
+            src="/images/fashionyapa.webp"
+            alt="Fashionyapa Viral Combos — beauty essentials banner"
           />
         </div>
 
-        <div className="hero-note">
-          Your Beauty
-          <br />
-          <em>Your Rules</em> <span>♡</span>
-        </div>
+        <a className="hero-banner-link" href="#products" aria-label="Shop Fashionyapa Viral Combos" />
       </section>
 
       <section className="benefit-strip" aria-label="Shopping information">
@@ -361,7 +367,7 @@ export default function Home() {
               <h2>Shop Viral Combos</h2>
             </div>
             <span className="view-all">
-              7 Curated Combos <Sparkles size={15} />
+              8 Curated Combos <Sparkles size={15} />
             </span>
           </div>
 
@@ -372,7 +378,7 @@ export default function Home() {
                 autoFocus
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
-                placeholder="Search the 7 beauty combos..."
+                placeholder="Search the 8 beauty combos..."
               />
               <button
                 className="icon-button"
@@ -391,7 +397,7 @@ export default function Home() {
             {filtered.map((product) => (
               <article className="product-card" key={product.id}>
                 <div className="product-photo blush">
-                  <img src={product.image} alt={product.name} />
+                  <img src={product.image} alt={product.name} onError={(event) => { const image = event.currentTarget; const fallbackImage = initialProducts.find((fallback) => fallback.id === product.id)?.image; if (!image.dataset.fallbackApplied && fallbackImage) { image.dataset.fallbackApplied = "true"; image.src = fallbackImage; } else { image.style.visibility = "hidden"; } }} />
 
                   <span className="tag">{product.tag}</span>
 
@@ -460,7 +466,7 @@ export default function Home() {
             a little more <em>lovely.</em>
           </h2>
           <p className="love-intro">
-            Explore seven handpicked makeup and body-care combos from
+            Explore eight handpicked makeup and body-care combos from
             Fashionyapa. Find the collection that fits your routine and your
             personal style.
           </p>
@@ -540,11 +546,43 @@ export default function Home() {
                 How can I contact Fashionyapa? <span>+</span>
               </summary>
               <p>
-                Call +91 74892 21780, WhatsApp +91 96307 77096, or email
-                fashionyapa07@gmail.com.
+                WhatsApp +91 96307 77096 or email fashionyapa07@gmail.com. Our store address: Sahu Moholla, Basic School Road, Babai, Madhya Pradesh 461661.
               </p>
             </details>
           </div>
+        </div>
+      </section>
+
+      <section className="reviews-feedback-section" id="reviews">
+        <div className="section-inner reviews-feedback-grid">
+          <div className="reviews-panel">
+            <div className="eyebrow">YOUR VOICE MATTERS</div>
+            <h2>Reviews &amp; <em>love notes.</em></h2>
+            <p>Seen something you love? Explore customer updates and share your experience with Fashionyapa.</p>
+            <a className="review-link" href={reviewsInstagramUrl} target="_blank" rel="noreferrer">
+              <Instagram size={17} /> See customer reviews <ExternalLink size={14} />
+            </a>
+            <div className="review-note"><Star size={17} /> We only feature genuine customer feedback.</div>
+          </div>
+          <form className="feedback-card" onSubmit={(event) => {
+            event.preventDefault();
+            const subject = encodeURIComponent('Fashionyapa website feedback');
+            const body = encodeURIComponent(`Name: ${feedbackName || 'Not provided'}\\n\\nFeedback: ${feedbackMessage}`);
+            window.location.href = `mailto:fashionyapa07@gmail.com?subject=${subject}&body=${body}`;
+          }}>
+            <div className="eyebrow">A LITTLE NOTE TO US</div>
+            <h3>Share your feedback</h3>
+            <label>
+              Your name <span>(optional)</span>
+              <input value={feedbackName} onChange={(event) => setFeedbackName(event.target.value)} placeholder="Enter your name" />
+            </label>
+            <label>
+              Your feedback
+              <textarea value={feedbackMessage} onChange={(event) => setFeedbackMessage(event.target.value)} placeholder="Tell us what you think..." rows={4} required />
+            </label>
+            <button className="feedback-submit" type="submit"><Send size={15} /> Send feedback</button>
+            <small>This opens your email app so you can send the feedback to Fashionyapa.</small>
+          </form>
         </div>
       </section>
 
@@ -558,7 +596,7 @@ export default function Home() {
             <em>Your kind of lovely.</em>
           </h2>
           <p>
-            Seven beauty and body-care combos, curated for your everyday
+            Eight beauty and body-care combos, curated for your everyday
             favourites.
           </p>
           <div className="social-links">
@@ -583,30 +621,57 @@ export default function Home() {
       </section>
 
       <footer className="footer">
-        <div className="footer-brand">
-          <img src="/images/fashionyapa-logo.png" alt="" />
-          <span>FASHIONYAPA</span>
+        <div className="footer-main">
+          <div className="footer-about">
+            <div className="footer-brand">
+              <img src="/images/fashionyapa-logo.webp" alt="" />
+              <span>FASHIONYAPA</span>
+            </div>
+            <p>Little beauty finds, picked for your vibe. ♡</p>
+            <div className="footer-socials">
+              <a href={instagramUrl} target="_blank" rel="noreferrer" aria-label="Fashionyapa Instagram"><Instagram size={18} /></a>
+              <a href={youtubeUrl} target="_blank" rel="noreferrer" aria-label="Fashionyapa YouTube"><Youtube size={18} /></a>
+              <a href="https://wa.me/919630777096" target="_blank" rel="noreferrer" aria-label="Chat on WhatsApp"><MessageCircle size={18} /></a>
+            </div>
+          </div>
+          <div className="footer-column">
+            <h3>Shop &amp; Explore</h3>
+            <a href="#products">Viral Combos</a>
+            <a href="#about">Our Story</a>
+            <a href="#reviews">Reviews &amp; Feedback</a>
+            <a href="#faq">FAQs</a>
+          </div>
+          <div className="footer-column">
+            <h3>Customer Care</h3>
+            <a href="#faq">Shipping Information</a>
+            <a href="#faq">No Return / No Exchange Policy</a>
+            <a href="/privacy-policy">Privacy Policy</a>
+            <a href="/terms">Terms &amp; Conditions</a>
+          </div>
+          <div className="footer-column footer-contact">
+            <h3>Contact Us</h3>
+            <a href="mailto:fashionyapa07@gmail.com"><Mail size={16} /> fashionyapa07@gmail.com</a>
+            <a href="tel:+919630777096"><Phone size={16} /> +91 96307 77096</a>
+            <a href="https://wa.me/919630777096?text=Hi%20Fashionyapa%2C%20I%20need%20help." target="_blank" rel="noreferrer"><MessageCircle size={16} /> WhatsApp Support</a>
+            <a href="https://www.google.com/maps/dir/?api=1&destination=Fashionyapa%2C%20Sahu%20Moholla%2C%20Basic%20School%20Road%2C%20Babai%2C%20Madhya%20Pradesh%20461661" target="_blank" rel="noreferrer"><MapPin size={16} /> Sahu Moholla, Basic School Road, Babai, MP 461661 <ExternalLink size={13} /></a>
+          </div>
         </div>
-
-        <p>Little beauty finds, picked for your vibe. ♡</p>
-
-        <div className="footer-links">
-          <a href="#products">Viral Combos</a>
-          <a href="#about">Our Story</a>
-          <a href="#faq">FAQs</a>
-          <a href="#faq">Shipping &amp; Returns</a>
-          <a href={instagramUrl} target="_blank" rel="noreferrer">
-            Instagram
-          </a>
-          <a href={youtubeUrl} target="_blank" rel="noreferrer">
-            YouTube
-          </a>
-        </div>
-
-        <small>
-          © 2026 Fashionyapa. All rights reserved. Product details and Combo 7 pricing will be confirmed before launch.
-        </small>
+        <div className="footer-policy-note"><ShieldCheck size={15} /> Please review product details and our no-return/no-exchange policy before placing an order.</div>
+        <small className="footer-copyright">© 2026 Fashionyapa. All rights reserved.</small>
       </footer>
+
+      <a
+        className="whatsapp-float"
+        href="https://wa.me/919630777096?text=Hi%20Fashionyapa%2C%20I%20need%20help%20with%20an%20order."
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Chat with Fashionyapa on WhatsApp"
+        title="Chat on WhatsApp"
+      >
+        <svg className="whatsapp-brand-icon" viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+          <path fill="currentColor" d="M16.02 3.2A12.68 12.68 0 0 0 5.1 22.33L3.3 28.8l6.63-1.74A12.67 12.67 0 1 0 16.02 3.2Zm0 23.1c-1.98 0-3.92-.53-5.62-1.54l-.4-.24-3.94 1.04 1.05-3.84-.26-.4a10.43 10.43 0 1 1 9.17 4.98Zm5.72-7.82c-.31-.16-1.85-.91-2.14-1.02-.29-.11-.5-.16-.71.16-.21.31-.81 1.02-.99 1.23-.18.21-.36.23-.67.08-.31-.16-1.31-.48-2.5-1.52-.92-.82-1.54-1.83-1.72-2.14-.18-.31-.02-.48.14-.64.14-.14.31-.36.47-.54.16-.18.21-.31.31-.52.1-.21.05-.39-.03-.55-.08-.16-.71-1.71-.97-2.34-.26-.61-.52-.53-.71-.54h-.6c-.21 0-.55.08-.84.39-.29.31-1.1 1.07-1.1 2.61s1.13 3.03 1.29 3.24c.16.21 2.22 3.39 5.38 4.75.75.32 1.33.51 1.78.65.75.24 1.44.21 1.98.13.6-.09 1.85-.76 2.11-1.49.26-.73.26-1.36.18-1.49-.08-.13-.29-.21-.6-.37Z" />
+        </svg>
+      </a>
 
       <div className="made-by">
         <span>Thoughtfully crafted with <b>♡</b> by</span>
@@ -649,7 +714,7 @@ export default function Home() {
                 <div className="cart-items">
                   {cartLines.map((product) => (
                     <div className="cart-line" key={product.id}>
-                      <img src={product.image} alt={product.name} />
+                      <img src={product.image} alt={product.name} onError={(event) => { const image = event.currentTarget; const fallbackImage = initialProducts.find((fallback) => fallback.id === product.id)?.image; if (!image.dataset.fallbackApplied && fallbackImage) { image.dataset.fallbackApplied = "true"; image.src = fallbackImage; } else { image.style.visibility = "hidden"; } }} />
                       <div className="cart-line-info">
                         <strong>{product.name}</strong>
                         <span>
@@ -737,7 +802,7 @@ export default function Home() {
                   <ShoppingBag size={35} />
                 </div>
                 <h3>Your bag is waiting for something lovely</h3>
-                <p>Explore the seven combos and pick your favourites.</p>
+                <p>Explore all eight combos and pick your favourites.</p>
                 <button
                   className="primary-cta"
                   onClick={() => {
