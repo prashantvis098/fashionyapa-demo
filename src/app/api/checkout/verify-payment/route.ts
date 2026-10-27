@@ -1,5 +1,169 @@
+
 import { NextResponse } from 'next/server';
 import crypto from 'crypto';
-import Razorpay from 'razorpay';
 import { adminDb } from '@/lib/firebase/admin';
-export async function POST(request:Request){try{const b=await request.json();const {orderId,razorpay_order_id,razorpay_payment_id,razorpay_signature}=b||{};if(!orderId||!razorpay_order_id||!razorpay_payment_id||!razorpay_signature)return NextResponse.json({error:'Missing payment verification fields.'},{status:400});const doc=await adminDb().collection('orders').doc(String(orderId)).get();if(!doc.exists)return NextResponse.json({error:'Order not found.'},{status:404});const order=doc.data()!;if(order.razorpay_order_id!==razorpay_order_id)return NextResponse.json({error:'Payment order mismatch.'},{status:400});const expected=crypto.createHmac('sha256',process.env.RAZORPAY_KEY_SECRET||'').update(`${razorpay_order_id}|${razorpay_payment_id}`).digest('hex');const a=Buffer.from(expected);const c=Buffer.from(String(razorpay_signature));if(a.length!==c.length||!crypto.timingSafeEqual(a,c))return NextResponse.json({error:'Payment signature verification failed.'},{status:400});const razorpay=new Razorpay({key_id:process.env.RAZORPAY_KEY_ID||'',key_secret:process.env.RAZORPAY_KEY_SECRET||''});const payment=await razorpay.payments.fetch(String(razorpay_payment_id));if(payment.order_id!==razorpay_order_id||payment.status!=='captured'||Number(payment.amount)!==Number(order.amount_due_now)*100)return NextResponse.json({error:'Payment is not captured or amount does not match. Please contact support if money was deducted.'},{status:400});const db=adminDb();await db.runTransaction(async tx=>{const ref=db.collection('orders').doc(String(orderId));const fresh=await tx.get(ref);if(!fresh.exists)throw new Error('Order not found.');const d=fresh.data()!;if(d.payment_status==='paid'||d.payment_status==='advance_paid')return;const productRefs=(d.items||[]).map((item: {product_id:string})=>db.collection('products').doc(String(item.product_id)));const productSnaps=[];for(const pref of productRefs)productSnaps.push(await tx.get(pref));const paid=Number(d.amount_due_now||d.total_amount);tx.update(ref,{razorpay_payment_id,payment_status:d.payment_method==='cod'?'advance_paid':'paid',amount_paid:paid,amount_due:Math.max(0,Number(d.total_amount)-paid),status:'confirmed',paid_at:new Date().toISOString(),updated_at:new Date().toISOString()});(d.items||[]).forEach((item: {product_id:string;quantity:number},i:number)=>{const ps=productSnaps[i];if(ps.exists)tx.update(productRefs[i],{stock:Math.max(0,Number(ps.data()?.stock||0)-Number(item.quantity)),updated_at:new Date().toISOString()});});});return NextResponse.json({ok:true,orderNumber:order.order_number,orderId});}catch(e){return NextResponse.json({error:e instanceof Error?e.message:'Payment verification failed.'},{status:500});}}
+
+export async function POST(request: Request) {
+  const raw = await request.text();
+  const signature =
+    request.headers.get('x-razorpay-signature') || '';
+  const secret = process.env.RAZORPAY_WEBHOOK_SECRET;
+
+  if (!secret) {
+    return NextResponse.json(
+      { error: 'Webhook secret is not configured.' },
+      { status: 503 }
+    );
+  }
+
+  const expected = crypto
+    .createHmac('sha256', secret)
+    .update(raw)
+    .digest('hex');
+
+  const a = Buffer.from(expected);
+  const b = Buffer.from(signature);
+
+  if (
+    a.length !== b.length ||
+    !crypto.timingSafeEqual(a, b)
+  ) {
+    return NextResponse.json(
+      { error: 'Invalid webhook signature.' },
+      { status: 400 }
+    );
+  }
+
+  try {
+    const event = JSON.parse(raw);
+
+    if (event.event !== 'payment.captured') {
+      return NextResponse.json({ received: true });
+    }
+
+    const entity = event.payload?.payment?.entity;
+    const orderId = entity?.notes?.fashionyapa_order_id;
+
+    if (!orderId || !entity?.order_id || !entity?.id) {
+      return NextResponse.json({ received: true });
+    }
+
+    const db = adminDb();
+    const orderRef = db
+      .collection('orders')
+      .doc(String(orderId));
+
+    await db.runTransaction(async (tx) => {
+      const orderSnap = await tx.get(orderRef);
+
+      if (!orderSnap.exists) {
+        return;
+      }
+
+      const order = orderSnap.data()!;
+
+      if (
+        order.razorpay_order_id !== entity.order_id ||
+        ['paid', 'advance_paid'].includes(order.payment_status)
+      ) {
+        return;
+      }
+
+      const items = (order.items || []) as Array<{
+        product_id: string;
+        quantity: number;
+      }>;
+
+      const productRefs = items.map((item) =>
+        db
+          .collection('products')
+          .doc(String(item.product_id))
+      );
+
+      // Infer the snapshot type directly from Firestore.
+      const productSnaps = await Promise.all(
+        productRefs.map((productRef) => tx.get(productRef))
+      );
+
+      const paidAmount = Number(entity.amount) / 100;
+      const now = new Date().toISOString();
+
+      tx.update(orderRef, {
+        razorpay_payment_id: entity.id,
+        payment_status:
+          order.payment_method === 'cod'
+            ? 'advance_paid'
+            : 'paid',
+        amount_paid: paidAmount,
+        amount_due: Math.max(
+          0,
+          Number(order.total_amount) - paidAmount
+        ),
+        status: 'confirmed',
+        paid_at: now,
+        updated_at: now,
+      });
+
+      items.forEach((item, index) => {
+        const productSnap = productSnaps[index];
+
+        if (productSnap.exists) {
+          tx.update(productRefs[index], {
+            stock: Math.max(
+              0,
+              Number(productSnap.data()?.stock || 0) -
+                Number(item.quantity)
+            ),
+            updated_at: now,
+          });
+        }
+      });
+    });
+
+    return NextResponse.json({ received: true });
+  } catch {
+    return NextResponse.json(
+      { error: 'Could not process webhook.' },
+      { status: 500 }
+    );
+  }
+}
+export async function GET() {
+  try {
+    const snap = await adminDb()
+      .collection('products')
+      .where('is_active', '==', true)
+      .get();
+
+    const products = snap.docs.map((doc) => {
+      const data = doc.data();
+
+      return {
+        ...data,
+        id: Number(data.storefront_id || doc.id),
+        image: data.image_url || data.image || '',
+        price: data.price ?? null,
+        mrp: data.compare_at_price ?? null,
+      };
+    });
+
+    return NextResponse.json(
+      { products, configured: true },
+      { headers: { 'Cache-Control': 'no-store' } }
+    );
+  } catch (error) {
+    console.error('Products API error:', error);
+
+    return NextResponse.json(
+      {
+        products: [],
+        configured: false,
+        error: 'Check server terminal',
+      },
+      {
+        status: 500,
+        headers: { 'Cache-Control': 'no-store' },
+      }
+    );
+  }
+}

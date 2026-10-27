@@ -1,4 +1,129 @@
+
 import { NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { adminDb } from '@/lib/firebase/admin';
-export async function POST(request:Request){const raw=await request.text();const signature=request.headers.get('x-razorpay-signature')||'';const secret=process.env.RAZORPAY_WEBHOOK_SECRET;if(!secret)return NextResponse.json({error:'Webhook secret is not configured.'},{status:503});const expected=crypto.createHmac('sha256',secret).update(raw).digest('hex');const a=Buffer.from(expected),b=Buffer.from(signature);if(a.length!==b.length||!crypto.timingSafeEqual(a,b))return NextResponse.json({error:'Invalid webhook signature.'},{status:400});try{const event=JSON.parse(raw);if(event.event!=='payment.captured')return NextResponse.json({received:true});const entity=event.payload?.payment?.entity;const orderId=entity?.notes?.fashionyapa_order_id;if(!orderId||!entity?.order_id)return NextResponse.json({received:true});const db=adminDb();await db.runTransaction(async tx=>{const ref=db.collection('orders').doc(String(orderId));const snap=await tx.get(ref);if(!snap.exists)return;const order=snap.data()!;if(order.razorpay_order_id!==entity.order_id||['paid','advance_paid'].includes(order.payment_status))return;const refs=(order.items||[]).map((item:{product_id:string})=>db.collection('products').doc(String(item.product_id)));const productSnaps=[];for(const pr of refs)productSnaps.push(await tx.get(pr));const paid=Number(entity.amount)/100;tx.update(ref,{razorpay_payment_id:entity.id,payment_status:order.payment_method==='cod'?'advance_paid':'paid',amount_paid:paid,amount_due:Math.max(0,Number(order.total_amount)-paid),status:'confirmed',paid_at:new Date().toISOString(),updated_at:new Date().toISOString()});(order.items||[]).forEach((item:{quantity:number},i:number)=>{const ps=productSnaps[i];if(ps.exists)tx.update(refs[i],{stock:Math.max(0,Number(ps.data()?.stock||0)-Number(item.quantity)),updated_at:new Date().toISOString()});});});return NextResponse.json({received:true});}catch{return NextResponse.json({error:'Could not process webhook.'},{status:500});}}
+
+export async function POST(request: Request) {
+  const raw = await request.text();
+  const signature =
+    request.headers.get('x-razorpay-signature') || '';
+  const secret = process.env.RAZORPAY_WEBHOOK_SECRET;
+
+  if (!secret) {
+    return NextResponse.json(
+      { error: 'Webhook secret is not configured.' },
+      { status: 503 }
+    );
+  }
+
+  const expected = crypto
+    .createHmac('sha256', secret)
+    .update(raw)
+    .digest('hex');
+
+  const expectedBuffer = Buffer.from(expected);
+  const signatureBuffer = Buffer.from(signature);
+
+  if (
+    expectedBuffer.length !== signatureBuffer.length ||
+    !crypto.timingSafeEqual(expectedBuffer, signatureBuffer)
+  ) {
+    return NextResponse.json(
+      { error: 'Invalid webhook signature.' },
+      { status: 400 }
+    );
+  }
+
+  try {
+    const event = JSON.parse(raw);
+
+    if (event.event !== 'payment.captured') {
+      return NextResponse.json({ received: true });
+    }
+
+    const entity = event.payload?.payment?.entity;
+    const orderId = entity?.notes?.fashionyapa_order_id;
+
+    if (!orderId || !entity?.order_id || !entity?.id) {
+      return NextResponse.json({ received: true });
+    }
+
+    const db = adminDb();
+    const orderRef = db
+      .collection('orders')
+      .doc(String(orderId));
+
+    await db.runTransaction(async (tx) => {
+      const orderSnap = await tx.get(orderRef);
+
+      if (!orderSnap.exists) {
+        return;
+      }
+
+      const order = orderSnap.data()!;
+
+      if (
+        order.razorpay_order_id !== entity.order_id ||
+        ['paid', 'advance_paid'].includes(order.payment_status)
+      ) {
+        return;
+      }
+
+      const items = (order.items || []) as Array<{
+        product_id: string;
+        quantity: number;
+      }>;
+
+      const productRefs = items.map((item) =>
+        db.collection('products').doc(String(item.product_id))
+      );
+
+      // Read all product snapshots before transaction writes.
+      const productSnaps = await Promise.all(
+        productRefs.map((productRef) => tx.get(productRef))
+      );
+
+      const paidAmount = Number(entity.amount) / 100;
+      const now = new Date().toISOString();
+
+      tx.update(orderRef, {
+        razorpay_payment_id: entity.id,
+        payment_status:
+          order.payment_method === 'cod' ? 'advance_paid' : 'paid',
+        amount_paid: paidAmount,
+        amount_due: Math.max(
+          0,
+          Number(order.total_amount) - paidAmount
+        ),
+        status: 'confirmed',
+        paid_at: now,
+        updated_at: now,
+      });
+
+      items.forEach((item, index) => {
+        const productSnap = productSnaps[index];
+
+        if (productSnap.exists) {
+          tx.update(productRefs[index], {
+            stock: Math.max(
+              0,
+              Number(productSnap.data()?.stock || 0) -
+                Number(item.quantity)
+            ),
+            updated_at: now,
+          });
+        }
+      });
+    });
+
+    return NextResponse.json({ received: true });
+  } catch (error) {
+    console.error('Razorpay webhook processing error:', error);
+
+    return NextResponse.json(
+      { error: 'Could not process webhook.' },
+      { status: 500 }
+    );
+  }
+}
+
