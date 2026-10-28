@@ -657,3 +657,23 @@ body { background: #fbf8f2; color: #302820; }
     background-position: center;
   }
 }
+
+
+/* Final product-title emphasis */
+.product-info h3,
+.product-info h3 a {
+  font-weight: 700;
+  color: #2b2029;
+  letter-spacing: -0.2px;
+}
+
+.product-info h3 a:hover {
+  color: #a95461;
+}
+
+@media (max-width: 760px) {
+  .product-info h3,
+  .product-info h3 a {
+    font-weight: 700;
+  }
+}
