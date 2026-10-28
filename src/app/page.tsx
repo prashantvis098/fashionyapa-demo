@@ -557,7 +557,7 @@ export default function Home() {
         <div className="section-inner">
           <div className="reviews-panel reviews-panel-heading">
             <div className="eyebrow">YOUR VOICE MATTERS</div>
-            <h2>Reviews</h2>
+            <h2>Real Vibe Reviews</h2>
             <p>Real words from Fashionyapa customers. Thank you for sharing your love with us.</p>
             <a className="review-link" href={reviewsInstagramUrl} target="_blank" rel="noreferrer">
               <Instagram size={17} /> Real Vibe Reviews <ExternalLink size={14} />
@@ -623,6 +623,30 @@ export default function Home() {
                   loading="lazy"
                 />
               </article>
+              <article className="real-review-card" key="customer-review-8">
+                <img
+                  className="real-review-image"
+                  src="/images/reviews/customer-review-8.jpeg"
+                  alt="Fashionyapa customer review by Nidhi"
+                  loading="lazy"
+                />
+              </article>
+              <article className="real-review-card" key="customer-review-9">
+                <img
+                  className="real-review-image"
+                  src="/images/reviews/customer-review-9.jpeg"
+                  alt="Fashionyapa customer review by Shiva"
+                  loading="lazy"
+                />
+              </article>
+              <article className="real-review-card" key="customer-review-10">
+                <img
+                  className="real-review-image"
+                  src="/images/reviews/customer-review-10.jpeg"
+                  alt="Fashionyapa customer review by Muskan"
+                  loading="lazy"
+                />
+              </article>
               <div className="real-reviews-duplicate" aria-hidden="true">
               <article className="real-review-card" key="customer-review-1-duplicate" aria-hidden="true">
                 <img
@@ -677,6 +701,30 @@ export default function Home() {
                   className="real-review-image"
                   src="/images/reviews/customer-review-7.jpeg"
                   alt="Fashionyapa customer review 7"
+                  loading="lazy"
+                />
+              </article>
+              <article className="real-review-card" key="customer-review-8-duplicate" aria-hidden="true">
+                <img
+                  className="real-review-image"
+                  src="/images/reviews/customer-review-8.jpeg"
+                  alt="Fashionyapa customer review by Nidhi"
+                  loading="lazy"
+                />
+              </article>
+              <article className="real-review-card" key="customer-review-9-duplicate" aria-hidden="true">
+                <img
+                  className="real-review-image"
+                  src="/images/reviews/customer-review-9.jpeg"
+                  alt="Fashionyapa customer review by Shiva"
+                  loading="lazy"
+                />
+              </article>
+              <article className="real-review-card" key="customer-review-10-duplicate" aria-hidden="true">
+                <img
+                  className="real-review-image"
+                  src="/images/reviews/customer-review-10.jpeg"
+                  alt="Fashionyapa customer review by Muskan"
                   loading="lazy"
                 />
               </article>
