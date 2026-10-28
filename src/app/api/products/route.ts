@@ -1,6 +1,7 @@
 
 import { NextResponse } from 'next/server';
 import { adminDb } from '@/lib/firebase/admin';
+import { products as localProducts } from '@/lib/products';
 
 export async function GET() {
   try {
@@ -19,6 +20,12 @@ export async function GET() {
             ? '/images/combo-gallery/combo-8/01.jpg'
             : '';
       const suppliedImage = String(data.image_url || data.image || '').trim();
+      const localProduct = localProducts.find((item) => item.id === id);
+      const rawPrice = data.price;
+      const parsedPrice = rawPrice == null || rawPrice === '' ? null : Number(rawPrice);
+      const price = parsedPrice !== null && Number.isFinite(parsedPrice) && parsedPrice > 0
+        ? parsedPrice
+        : (localProduct?.price ?? null);
 
       return {
         ...data,
@@ -27,7 +34,7 @@ export async function GET() {
         image: /^https?:\/\//i.test(suppliedImage)
           ? suppliedImage
           : fallbackImage || suppliedImage,
-        price: data.price ?? null,
+        price,
         mrp: data.compare_at_price ?? null,
       };
     });

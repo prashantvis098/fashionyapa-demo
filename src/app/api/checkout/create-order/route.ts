@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import Razorpay from 'razorpay';
 import { adminDb } from '@/lib/firebase/admin';
+import { products as localProducts } from '@/lib/products';
 
 type CheckoutCustomer = {
   name?: string;
@@ -104,22 +105,41 @@ export async function POST(request: Request) {
       }
 
       const product = productDoc.data();
-      if (!product || !product.is_active || Number(product.stock) <= 0 || product.price == null) {
+      if (!product || !product.is_active) {
         return NextResponse.json(
-          { error: `${product?.name ?? 'This product'} is unavailable or not priced yet.` },
+          { error: `${product?.name ?? 'This product'} is unavailable.` },
           { status: 400 }
         );
       }
 
-      if (Number(product.stock) < quantity) {
+      // Use the same canonical local catalogue as the storefront if Firestore
+      // has a missing/invalid price. Never trust a price sent by the browser.
+      const storefrontId = Number(product.storefront_id ?? id);
+      const rawDbPrice = product.price;
+      const parsedDbPrice =
+        rawDbPrice == null || rawDbPrice === '' ? null : Number(rawDbPrice);
+      const localProduct = localProducts.find((item) => item.id === storefrontId);
+      const unitPrice =
+        parsedDbPrice !== null && Number.isFinite(parsedDbPrice) && parsedDbPrice > 0
+          ? parsedDbPrice
+          : (localProduct?.price ?? null);
+
+      if (unitPrice === null || !Number.isFinite(unitPrice) || unitPrice <= 0) {
+        return NextResponse.json(
+          { error: `${product.name ?? 'This product'} is not priced yet.` },
+          { status: 400 }
+        );
+      }
+
+      // Enforce stock only when a stock value is explicitly configured.
+      if (product.stock != null && Number(product.stock) < quantity) {
         return NextResponse.json(
           { error: `Insufficient stock for ${String(product.name ?? 'this product')}.` },
           { status: 400 }
         );
       }
 
-      const unitPrice = Number(product.price);
-      if (!Number.isFinite(unitPrice) || unitPrice < 0) {
+      if (!Number.isFinite(unitPrice) || unitPrice <= 0) {
         return NextResponse.json(
           { error: `Invalid price for ${String(product.name ?? 'this product')}.` },
           { status: 400 }
@@ -129,7 +149,7 @@ export async function POST(request: Request) {
       subtotal += unitPrice * quantity;
       verifiedItems.push({
         product_id: productDoc.id,
-        storefront_id: Number(product.storefront_id ?? id),
+        storefront_id: storefrontId,
         name: String(product.name ?? 'Fashionyapa product'),
         unit_price: unitPrice,
         quantity,

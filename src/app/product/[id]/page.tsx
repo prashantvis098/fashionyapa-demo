@@ -50,7 +50,7 @@ export default async function ProductDetailPage({
           id: Number(data.storefront_id || id),
           name: String(data.name),
           subtitle: String(data.subtitle || data.description || ''),
-          price: data.price == null ? null : Number(data.price),
+          price: data.price == null ? (products.find((item) => item.id === Number(data.storefront_id || id))?.price ?? null) : Number(data.price),
           tag: String(data.tag || 'VIRAL COMBO'),
           image: String(data.image_url || data.image || ''),
           description: String(data.description || ''),
