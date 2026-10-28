@@ -554,17 +554,36 @@ export default function Home() {
       </section>
 
       <section className="reviews-feedback-section" id="reviews">
-        <div className="section-inner reviews-feedback-grid">
-          <div className="reviews-panel">
+        <div className="section-inner">
+          <div className="reviews-panel reviews-panel-heading">
             <div className="eyebrow">YOUR VOICE MATTERS</div>
-            <h2>Reviews &amp; <em>love notes.</em></h2>
-            <p>Seen something you love? Explore customer updates and share your experience with Fashionyapa.</p>
+            <h2>Real Vibe Reviews</h2>
+            <p>Real words from Fashionyapa customers. Thank you for sharing your love with us.</p>
             <a className="review-link" href={reviewsInstagramUrl} target="_blank" rel="noreferrer">
               <Instagram size={17} /> See customer reviews <ExternalLink size={14} />
             </a>
-            <div className="review-note"><Star size={17} /> We only feature genuine customer feedback.</div>
           </div>
-          <form className="feedback-card" onSubmit={(event) => {
+
+          <div className="real-reviews-grid">
+            <article className="real-review-card">
+              <img className="real-review-photo" src="/images/reviews/customer-tulsi.webp" alt="Fashionyapa customer wearing a pink blouse and olive-green saree" />
+              <div className="real-review-copy">
+                <div className="real-review-stars" aria-label="Customer review">★★★★★</div>
+                <p>“Aap bhot payre lgre ho di minimal jewellery apke uppr bhot suit kar ri h ✨❤️ keep Shopping with Fashionyapa ❤️”</p>
+                <span className="real-review-thanks">“Thankyou tulsi❤️”</span>
+              </div>
+            </article>
+
+            <article className="real-review-card">
+              <img className="real-review-photo" src="/images/reviews/bridal-customer.webp" alt="Fashionyapa bridal jewellery customer" />
+              <div className="real-review-copy">
+                <div className="real-review-stars" aria-label="Customer review">★★★★★</div>
+                <p>“Hello diii Jewellery bhottt perfect lagri thi yr sabne itne sare complements diye pura look outfit and jewellery was so good and apke rent ke prices di bbot affordable lge mene meri sister ko bhi send Kia hai no unki shadi hai unko bata dena aap rental wale jewellery”</p>
+              </div>
+            </article>
+          </div>
+
+          <form className="feedback-card real-review-feedback" onSubmit={(event) => {
             event.preventDefault();
             const subject = encodeURIComponent('Fashionyapa website feedback');
             const body = encodeURIComponent(`Name: ${feedbackName || 'Not provided'}\\n\\nFeedback: ${feedbackMessage}`);
