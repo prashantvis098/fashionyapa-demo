@@ -665,13 +665,100 @@ body { background: #fbf8f2; color: #302820; }
 .reviews-panel-heading h2 { font: 600 clamp(32px, 4vw, 44px)/1.12 'Playfair Display', Georgia, serif; margin: 12px 0; letter-spacing: -.03em; color: #281d24; }
 .reviews-panel-heading > p { max-width: 560px; margin: 0 auto; font-size: 13px; line-height: 1.8; color: #79666d; }
 .reviews-panel-heading .review-link { margin-top: 18px; }
-.real-reviews-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px; align-items: stretch; }
-.real-review-card { min-width: 0; overflow: hidden; display: grid; grid-template-columns: minmax(115px, .72fr) minmax(0, 1fr); background: #fff; border: 1px solid #eddfda; border-radius: 14px; box-shadow: 0 8px 24px rgba(61,32,32,.045); }
-.real-review-photo { display: block; width: 100%; height: 100%; min-height: 260px; object-fit: cover; object-position: center; background: #f3e4df; }
+.real-reviews-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 22px; align-items: start; }
+.real-review-card { min-width: 0; overflow: hidden; background: #fff; border: 1px solid #eddfda; border-radius: 14px; box-shadow: 0 8px 24px rgba(61,32,32,.045); }
+.real-review-image { display: block; width: 100%; height: auto; aspect-ratio: 1 / 1; object-fit: contain; background: #fff; }
 .real-review-copy { padding: 20px 18px; display: flex; flex-direction: column; justify-content: center; min-width: 0; }
 .real-review-stars { color: #d2a04c; letter-spacing: 3px; font-size: 16px; margin-bottom: 12px; }
 .real-review-copy p { margin: 0; color: #4b3941; font-size: 13px; line-height: 1.8; overflow-wrap: anywhere; }
 .real-review-thanks { margin-top: 14px; color: #a45f69; font-size: 12px; font-weight: 700; }
 .real-review-feedback { max-width: 680px; margin: 30px auto 0; }
-@media (max-width: 900px) { .real-reviews-grid { grid-template-columns: 1fr; } .real-review-card { grid-template-columns: minmax(120px, .55fr) minmax(0, 1fr); } }
-@media (max-width: 520px) { .real-reviews-grid { gap: 15px; } .real-review-card { grid-template-columns: 1fr; } .real-review-photo { height: 240px; min-height: 0; object-position: center 35%; } .real-review-copy { padding: 18px; } .real-review-copy p { font-size: 12px; } .reviews-panel-heading { margin-bottom: 24px; } }
+@media (max-width: 900px) { .real-reviews-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; } }
+@media (max-width: 520px) { .real-reviews-grid { grid-template-columns: 1fr; gap: 16px; } .reviews-panel-heading { margin-bottom: 24px; } }
+
+
+/* Product titles: keep the requested bold styling */
+.product-info h3,
+.product-info h3 a {
+  font-weight: 700;
+  color: #2b2029;
+  letter-spacing: -0.2px;
+}
+
+.product-info h3 a:hover {
+  color: #a95461;
+}
+
+@media (max-width: 760px) {
+  .product-info h3,
+  .product-info h3 a {
+    font-weight: 700;
+  }
+}
+
+
+/* Real Vibe Reviews: seamless auto-scrolling single-line carousel */
+.real-reviews-marquee {
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+  padding: 8px 0 22px;
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 3%, #000 97%, transparent);
+  mask-image: linear-gradient(to right, transparent, #000 3%, #000 97%, transparent);
+}
+.real-reviews-track {
+  display: flex;
+  align-items: stretch;
+  width: max-content;
+  animation: fashionyapa-reviews-scroll 48s linear infinite;
+  will-change: transform;
+}
+.real-reviews-marquee:hover .real-reviews-track,
+.real-reviews-marquee:focus-within .real-reviews-track {
+  animation-play-state: paused;
+}
+.real-reviews-duplicate {
+  display: flex;
+  align-items: stretch;
+}
+.real-reviews-track > .real-review-card,
+.real-reviews-duplicate > .real-review-card {
+  flex: 0 0 clamp(210px, 23vw, 300px);
+  width: clamp(210px, 23vw, 300px);
+  margin-right: 18px;
+}
+.real-review-card {
+  min-width: 0;
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid #eddfda;
+  border-radius: 14px;
+  box-shadow: 0 8px 24px rgba(61, 32, 32, .045);
+}
+.real-review-image {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1 / 1;
+  object-fit: contain;
+  background: #fff;
+}
+@keyframes fashionyapa-reviews-scroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+@media (max-width: 600px) {
+  .real-reviews-track {
+    animation-duration: 38s;
+  }
+  .real-reviews-track > .real-review-card,
+  .real-reviews-duplicate > .real-review-card {
+    flex-basis: 76vw;
+    width: 76vw;
+    margin-right: 14px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .real-reviews-track { animation: none; }
+  .real-reviews-marquee { overflow-x: auto; }
+}

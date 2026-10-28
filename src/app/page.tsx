@@ -557,30 +557,131 @@ export default function Home() {
         <div className="section-inner">
           <div className="reviews-panel reviews-panel-heading">
             <div className="eyebrow">YOUR VOICE MATTERS</div>
-            <h2>Real Vibe Reviews</h2>
+            <h2>Reviews</h2>
             <p>Real words from Fashionyapa customers. Thank you for sharing your love with us.</p>
             <a className="review-link" href={reviewsInstagramUrl} target="_blank" rel="noreferrer">
-              <Instagram size={17} /> See customer reviews <ExternalLink size={14} />
+              <Instagram size={17} /> Real Vibe Reviews <ExternalLink size={14} />
             </a>
           </div>
 
-          <div className="real-reviews-grid">
-            <article className="real-review-card">
-              <img className="real-review-photo" src="/images/reviews/customer-tulsi.webp" alt="Fashionyapa customer wearing a pink blouse and olive-green saree" />
-              <div className="real-review-copy">
-                <div className="real-review-stars" aria-label="Customer review">★★★★★</div>
-                <p>“Aap bhot payre lgre ho di minimal jewellery apke uppr bhot suit kar ri h ✨❤️ keep Shopping with Fashionyapa ❤️”</p>
-                <span className="real-review-thanks">“Thankyou tulsi❤️”</span>
-              </div>
-            </article>
 
-            <article className="real-review-card">
-              <img className="real-review-photo" src="/images/reviews/bridal-customer.webp" alt="Fashionyapa bridal jewellery customer" />
-              <div className="real-review-copy">
-                <div className="real-review-stars" aria-label="Customer review">★★★★★</div>
-                <p>“Hello diii Jewellery bhottt perfect lagri thi yr sabne itne sare complements diye pura look outfit and jewellery was so good and apke rent ke prices di bbot affordable lge mene meri sister ko bhi send Kia hai no unki shadi hai unko bata dena aap rental wale jewellery”</p>
+          <div className="real-reviews-marquee" aria-label="Fashionyapa customer reviews">
+            <div className="real-reviews-track">
+              <article className="real-review-card" key="customer-review-1">
+                <img
+                  className="real-review-image"
+                  src="/images/reviews/customer-review-1.jpeg"
+                  alt="Fashionyapa customer review 1"
+                  loading="lazy"
+                />
+              </article>
+              <article className="real-review-card" key="customer-review-2">
+                <img
+                  className="real-review-image"
+                  src="/images/reviews/customer-review-2.jpeg"
+                  alt="Fashionyapa customer review 2"
+                  loading="lazy"
+                />
+              </article>
+              <article className="real-review-card" key="customer-review-3">
+                <img
+                  className="real-review-image"
+                  src="/images/reviews/customer-review-3.jpeg"
+                  alt="Fashionyapa customer review 3"
+                  loading="lazy"
+                />
+              </article>
+              <article className="real-review-card" key="customer-review-4">
+                <img
+                  className="real-review-image"
+                  src="/images/reviews/customer-review-4.jpeg"
+                  alt="Fashionyapa customer review 4"
+                  loading="lazy"
+                />
+              </article>
+              <article className="real-review-card" key="customer-review-5">
+                <img
+                  className="real-review-image"
+                  src="/images/reviews/customer-review-5.jpeg"
+                  alt="Fashionyapa customer review 5"
+                  loading="lazy"
+                />
+              </article>
+              <article className="real-review-card" key="customer-review-6">
+                <img
+                  className="real-review-image"
+                  src="/images/reviews/customer-review-6.jpeg"
+                  alt="Fashionyapa customer review 6"
+                  loading="lazy"
+                />
+              </article>
+              <article className="real-review-card" key="customer-review-7">
+                <img
+                  className="real-review-image"
+                  src="/images/reviews/customer-review-7.jpeg"
+                  alt="Fashionyapa customer review 7"
+                  loading="lazy"
+                />
+              </article>
+              <div className="real-reviews-duplicate" aria-hidden="true">
+              <article className="real-review-card" key="customer-review-1-duplicate" aria-hidden="true">
+                <img
+                  className="real-review-image"
+                  src="/images/reviews/customer-review-1.jpeg"
+                  alt="Fashionyapa customer review 1"
+                  loading="lazy"
+                />
+              </article>
+              <article className="real-review-card" key="customer-review-2-duplicate" aria-hidden="true">
+                <img
+                  className="real-review-image"
+                  src="/images/reviews/customer-review-2.jpeg"
+                  alt="Fashionyapa customer review 2"
+                  loading="lazy"
+                />
+              </article>
+              <article className="real-review-card" key="customer-review-3-duplicate" aria-hidden="true">
+                <img
+                  className="real-review-image"
+                  src="/images/reviews/customer-review-3.jpeg"
+                  alt="Fashionyapa customer review 3"
+                  loading="lazy"
+                />
+              </article>
+              <article className="real-review-card" key="customer-review-4-duplicate" aria-hidden="true">
+                <img
+                  className="real-review-image"
+                  src="/images/reviews/customer-review-4.jpeg"
+                  alt="Fashionyapa customer review 4"
+                  loading="lazy"
+                />
+              </article>
+              <article className="real-review-card" key="customer-review-5-duplicate" aria-hidden="true">
+                <img
+                  className="real-review-image"
+                  src="/images/reviews/customer-review-5.jpeg"
+                  alt="Fashionyapa customer review 5"
+                  loading="lazy"
+                />
+              </article>
+              <article className="real-review-card" key="customer-review-6-duplicate" aria-hidden="true">
+                <img
+                  className="real-review-image"
+                  src="/images/reviews/customer-review-6.jpeg"
+                  alt="Fashionyapa customer review 6"
+                  loading="lazy"
+                />
+              </article>
+              <article className="real-review-card" key="customer-review-7-duplicate" aria-hidden="true">
+                <img
+                  className="real-review-image"
+                  src="/images/reviews/customer-review-7.jpeg"
+                  alt="Fashionyapa customer review 7"
+                  loading="lazy"
+                />
+              </article>
               </div>
-            </article>
+            </div>
           </div>
 
           <form className="feedback-card real-review-feedback" onSubmit={(event) => {
