@@ -129,7 +129,8 @@ export default function OrderConfirmationPage() {
         )}
 
         <div className="fy-confirm-actions">
-          <Link href="/#products" className="fy-confirm-primary">Continue shopping <ArrowRight size={17} /></Link>
+          <Link href="/track-order" className="fy-confirm-primary">Track your order <ArrowRight size={17} /></Link>
+          <Link href="/#products" className="fy-confirm-secondary">Continue shopping</Link>
           <a href="https://wa.me/919630777096" target="_blank" rel="noreferrer" className="fy-confirm-secondary"><MessageCircle size={17} /> WhatsApp support</a>
         </div>
         <p className="fy-confirm-footer">Made for your everyday style · FASHIONYAPA</p>

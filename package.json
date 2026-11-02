@@ -10,6 +10,7 @@
     "seed:products": "node scripts/seed-products.mjs"
   },
   "dependencies": {
+    "@aws-sdk/client-sesv2": "^3.1161.0",
     "firebase": "^11.10.0",
     "firebase-admin": "^13.10.0",
     "lucide-react": "^0.468.0",

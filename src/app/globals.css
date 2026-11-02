@@ -762,3 +762,216 @@ body { background: #fbf8f2; color: #302820; }
   .real-reviews-track { animation: none; }
   .real-reviews-marquee { overflow-x: auto; }
 }
+
+.dashboard-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 30px;
+}
+
+.dashboard-stat {
+  background: #fffdf9;
+  border: 1px solid #e9e0d5;
+  border-radius: 12px;
+  padding: 20px;
+  min-width: 0;
+}
+
+.dashboard-stat-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  color: #796e63;
+  font-size: 12px;
+}
+
+.dashboard-icon { font-size: 19px; }
+
+.dashboard-stat strong {
+  display: block;
+  margin-top: 17px;
+  font-size: 27px;
+  color: #302820;
+  overflow-wrap: anywhere;
+}
+
+.dashboard-stat small {
+  display: block;
+  margin-top: 7px;
+  color: #918578;
+  font-size: 11px;
+}
+
+.dashboard-middle {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr;
+  gap: 18px;
+  margin-top: 20px;
+}
+
+.dashboard-summary { padding: 23px; }
+
+.dashboard-section-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 22px;
+}
+
+.dashboard-section-heading h2,
+.dashboard-summary h2 {
+  margin: 4px 0 0;
+  font-size: 19px;
+  color: #302820;
+}
+
+.dashboard-section-heading a {
+  color: #846844;
+  font-size: 12px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.dashboard-progress { margin-top: 18px; }
+
+.dashboard-progress > div:first-child {
+  display: flex;
+  justify-content: space-between;
+  color: #65594d;
+  font-size: 12px;
+  margin-bottom: 8px;
+}
+
+.dashboard-progress-track {
+  height: 7px;
+  background: #eee8df;
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+.dashboard-progress-track div {
+  height: 100%;
+  background: #a88a63;
+  border-radius: 20px;
+}
+
+.dashboard-payment-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 16px 0;
+  border-bottom: 1px solid #eee7de;
+  color: #6d6258;
+  font-size: 13px;
+}
+
+.dashboard-payment-row strong { color: #302820; }
+
+.dashboard-payment-total {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 22px;
+  padding: 17px;
+  background: #f5f0e8;
+  border-radius: 9px;
+  color: #756756;
+  font-size: 12px;
+}
+
+.dashboard-payment-total strong {
+  font-size: 25px;
+  color: #302820;
+}
+
+.dashboard-recent {
+  margin-top: 20px;
+  padding: 23px;
+}
+
+.dashboard-status {
+  display: inline-block;
+  padding: 5px 9px;
+  background: #f3eee6;
+  border-radius: 20px;
+  font-size: 11px;
+  text-transform: capitalize;
+}
+
+.dashboard-bottom-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 22px;
+}
+
+.dashboard-error {
+  margin-top: 20px;
+  padding: 12px;
+  background: #fff0ed;
+  color: #a43d2b;
+  border-radius: 8px;
+}
+
+@media (max-width: 900px) {
+  .dashboard-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .dashboard-middle { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 480px) {
+  .dashboard-stats { gap: 10px; }
+  .dashboard-stat { padding: 14px; }
+  .dashboard-stat strong { font-size: 22px; }
+
+  .dashboard-bottom-actions {
+    flex-direction: column;
+  }
+
+  .dashboard-bottom-actions a { text-align: center; }
+}
+
+/* Track Order Header Button */
+.track-order-header {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 10px 15px;
+  border: 1px solid #e5bfc0;
+  border-radius: 24px;
+  background: #fff8f6;
+  color: #9e505d;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.track-order-header:hover {
+  background: #bd6b75;
+  border-color: #bd6b75;
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+.track-order-header svg {
+  flex-shrink: 0;
+}
+
+@media (max-width: 1100px) {
+  .track-order-header {
+    padding: 9px 11px;
+    font-size: 10px;
+  }
+}
+
+@media (max-width: 760px) {
+  .track-order-header {
+    display: none;
+  }
+}
