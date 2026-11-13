@@ -82,6 +82,29 @@ const statuses = [
 const money = (amount: number) =>
   `₹${Math.round(amount || 0).toLocaleString("en-IN")}`;
 
+/* =========================================================
+   PRODUCT IMAGE FALLBACK
+   ========================================================= */
+
+function getProductImage(item: OrderItem) {
+  const supplied = String(item.image_url || "").trim();
+  const id = Number(item.storefront_id || 0);
+
+  if (/^https?:\/\//i.test(supplied)) {
+    return supplied;
+  }
+
+  if (id >= 1 && id <= 7) {
+    return `/images/combos/combo-${id}/image-1.webp`;
+  }
+
+  if (id === 8) {
+    return "/images/combo-gallery/combo-8/01.jpg";
+  }
+
+  return supplied;
+}
+
 export default function AdminOrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [error, setError] = useState("");
@@ -998,7 +1021,9 @@ export default function AdminOrdersPage() {
                         .city ||
                       "—"
                     }
+
                     ,{" "}
+
                     {
                       selectedOrder
                         .address
@@ -1009,6 +1034,7 @@ export default function AdminOrdersPage() {
                     <br />
 
                     PIN:{" "}
+
                     {
                       selectedOrder
                         .address
@@ -1073,15 +1099,72 @@ export default function AdminOrdersPage() {
                             key={`${item.product_id || "item"}-${index}`}
                           >
                             <div className="order-item-image">
-                              {item.image_url ? (
+                              {getProductImage(item) ? (
                                 <img
-                                  src={
-                                    item.image_url
-                                  }
+                                  src={getProductImage(
+                                    item
+                                  )}
                                   alt={
                                     item.name ||
                                     "Product"
                                   }
+                                  onError={(e) => {
+                                    const img =
+                                      e.currentTarget;
+
+                                    const id =
+                                      Number(
+                                        item.storefront_id ||
+                                          0
+                                      );
+
+                                    img.onerror =
+                                      null;
+
+                                    if (
+                                      id >=
+                                        1 &&
+                                      id <=
+                                        7
+                                    ) {
+                                      img.src = `/images/combos/combo-${id}/image-1.webp`;
+                                      return;
+                                    }
+
+                                    if (
+                                      id ===
+                                      8
+                                    ) {
+                                      img.src =
+                                        "/images/combo-gallery/combo-8/01.jpg";
+                                      return;
+                                    }
+
+                                    img.style.display =
+                                      "none";
+
+                                    const parent =
+                                      img.parentElement;
+
+                                    if (
+                                      parent
+                                    ) {
+                                      const fallback =
+                                        document.createElement(
+                                          "div"
+                                        );
+
+                                      fallback.className =
+                                        "no-image";
+
+                                      fallback.textContent =
+                                        "No image";
+
+                                      parent.appendChild(
+                                        fallback
+                                      );
+                                    }
+                                  }}
                                 />
                               ) : (
                                 <div className="no-image">
