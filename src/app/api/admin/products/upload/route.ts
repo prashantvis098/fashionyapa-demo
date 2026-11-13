@@ -1,37 +1,148 @@
-import { NextResponse } from 'next/server';
-import { getStorage } from 'firebase-admin/storage';
-import { randomUUID } from 'crypto';
-import { adminAuth } from '@/lib/firebase/admin';
-import { requireAdmin } from '@/lib/firebase/admin-auth';
+import { NextResponse } from "next/server";
+import ImageKit from "imagekit";
+import { randomUUID } from "crypto";
+import { requireAdmin } from "@/lib/firebase/admin-auth";
 
-export const runtime = 'nodejs';
+export const runtime = "nodejs";
+
+const MAX_FILE_SIZE = 8 * 1024 * 1024;
+
+const ALLOWED_TYPES = new Set([
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/avif",
+]);
+
+function extensionFromMime(type: string) {
+  switch (type) {
+    case "image/jpeg":
+      return "jpg";
+    case "image/png":
+      return "png";
+    case "image/webp":
+      return "webp";
+    case "image/avif":
+      return "avif";
+    default:
+      return "jpg";
+  }
+}
+
+function getImageKit() {
+  const privateKey = process.env.IMAGEKIT_PRIVATE_KEY;
+  const publicKey = process.env.IMAGEKIT_PUBLIC_KEY;
+  const urlEndpoint = process.env.IMAGEKIT_URL_ENDPOINT;
+
+  if (!privateKey || !publicKey || !urlEndpoint) {
+    throw new Error(
+      "ImageKit is not configured. Check IMAGEKIT_PRIVATE_KEY, IMAGEKIT_PUBLIC_KEY and IMAGEKIT_URL_ENDPOINT."
+    );
+  }
+
+  return new ImageKit({
+    privateKey,
+    publicKey,
+    urlEndpoint,
+  });
+}
 
 export async function POST(request: Request) {
-  const access = await requireAdmin(request);
-  if (!access.ok) return NextResponse.json({ error: access.error }, { status: access.status });
   try {
-    const form = await request.formData();
-    const file = form.get('file');
-    if (!(file instanceof File)) return NextResponse.json({ error: 'Choose an image first.' }, { status: 400 });
-    if (!file.type.startsWith('image/')) return NextResponse.json({ error: 'Only image files are allowed.' }, { status: 400 });
-    if (file.size > 8 * 1024 * 1024) return NextResponse.json({ error: 'Image must be 8 MB or smaller.' }, { status: 400 });
+    // Keep existing admin protection
+    const access = await requireAdmin(request);
 
-    const bucketName = process.env.FIREBASE_STORAGE_BUCKET || process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET;
-    if (!bucketName) return NextResponse.json({ error: 'Firebase Storage bucket is not configured on the server.' }, { status: 503 });
-    const app = adminAuth().app;
-    const bucket = getStorage(app).bucket(bucketName);
-    const ext = file.type.split('/')[1]?.replace(/[^a-z0-9]/gi, '') || 'jpg';
-    const path = `products/${randomUUID()}.${ext}`;
-    const token = randomUUID();
+    if (!access.ok) {
+      return NextResponse.json(
+        { error: access.error },
+        { status: access.status }
+      );
+    }
+
+    const form = await request.formData();
+    const file = form.get("file");
+
+    if (!(file instanceof File)) {
+      return NextResponse.json(
+        { error: "Choose an image first." },
+        { status: 400 }
+      );
+    }
+
+    if (!ALLOWED_TYPES.has(file.type)) {
+      return NextResponse.json(
+        {
+          error:
+            "Only JPG, PNG, WebP and AVIF images are allowed.",
+        },
+        { status: 400 }
+      );
+    }
+
+    if (file.size <= 0) {
+      return NextResponse.json(
+        { error: "The selected image is empty." },
+        { status: 400 }
+      );
+    }
+
+    if (file.size > MAX_FILE_SIZE) {
+      return NextResponse.json(
+        {
+          error: "Image must be 8 MB or smaller.",
+        },
+        { status: 400 }
+      );
+    }
+
+    const imagekit = getImageKit();
+
+    const extension = extensionFromMime(file.type);
+
+    const fileName = `product-${Date.now()}-${randomUUID()}.${extension}`;
+
     const bytes = Buffer.from(await file.arrayBuffer());
-    await bucket.file(path).save(bytes, {
-      resumable: false,
-      metadata: { contentType: file.type, cacheControl: 'public,max-age=31536000,immutable', metadata: { firebaseStorageDownloadTokens: token } },
+
+    const result = await imagekit.upload({
+      file: bytes,
+      fileName,
+      folder: "/fashionyapa/products",
+      useUniqueFileName: true,
+      tags: ["fashionyapa", "product"],
     });
-    const url = `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodeURIComponent(path)}?alt=media&token=${token}`;
-    return NextResponse.json({ url, path }, { status: 201 });
+
+    if (!result.url) {
+      throw new Error("ImageKit did not return an image URL.");
+    }
+
+    return NextResponse.json(
+      {
+        success: true,
+
+        // Frontend already expects this
+        url: result.url,
+
+        // ImageKit file ID is useful for deletion later
+        fileId: result.fileId,
+
+        // Keep a path-like value for compatibility
+        path: result.filePath,
+
+        name: result.name,
+      },
+      { status: 201 }
+    );
   } catch (error) {
-    console.error('Product image upload failed:', error);
-    return NextResponse.json({ error: error instanceof Error ? error.message : 'Image upload failed.' }, { status: 500 });
+    console.error("Product image upload failed:", error);
+
+    return NextResponse.json(
+      {
+        error:
+          error instanceof Error
+            ? error.message
+            : "Image upload failed.",
+      },
+      { status: 500 }
+    );
   }
 }
